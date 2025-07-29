@@ -155,7 +155,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.6392157, g: 0.76862746, b: 0.972549, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -180,7 +180,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 20
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -240,13 +240,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22c76f226f7ab1a46b8fc4c25ccebfcf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tile: {fileID: 7482667652216324306, guid: b03e1f101d410c74e9995334b12e5d6d, type: 3}
+  grass: {fileID: 21300000, guid: 38673865f5fe53d46b4072e6d095acbe, type: 3}
+  dirt: {fileID: 21300000, guid: 59f6423f52006ac4e862f078fea58025, type: 3}
+  stone: {fileID: 21300000, guid: 3b03e7b24ad50c541a6def5c51c0ea70, type: 3}
+  log: {fileID: 21300000, guid: 9d069ac84fa3b8c48905c507c1bccdf8, type: 3}
+  leaf: {fileID: 21300000, guid: 0823c6e75ef569a4a8891c4a779f3cfd, type: 3}
+  treeChance: 15
+  minTreeHeight: 4
+  maxTreeHeight: 6
+  generateCaves: 1
+  dirtLayerHeight: 5
   surfaceValue: 0.25
   worldSize: 100
-  caveFreq: 0.08
-  terrainFreq: 0.04
   heightMultiplier: 25
   heightAddition: 25
+  terrainFreq: 0.04
+  caveFreq: 0.08
   seed: 0
   noiseTexture: {fileID: 0}
 --- !u!4 &602304327

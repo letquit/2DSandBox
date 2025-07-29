@@ -1,22 +1,47 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
+/// <summary>
+/// 地形生成类，用于在 Unity 中生成 2D 噪声地形。
+/// 使用 Perlin 噪声算法生成地形高度和洞穴结构，并根据噪声纹理决定是否生成地块。
+/// </summary>
 public class TerrainGeneration : MonoBehaviour
 {
-    public Sprite tile;
+    [Header("Tile Sprites")]
+    public Sprite grass;
+    public Sprite dirt;
+    public Sprite stone;
+    public Sprite log;
+    public Sprite leaf;
 
+    [Header("Trees")]
+    public int treeChance = 10;
+    public int minTreeHeight = 4;
+    public int maxTreeHeight = 6;
+    
+    [Header("Generation Settings")]
+    public bool generateCaves = true;
+    public int dirtLayerHeight = 5;
     public float surfaceValue = .25f;
     public int worldSize = 100;
-    public float caveFreq = .05f;
-    public float terrainFreq = .05f;
     public float heightMultiplier = 4f;
     public int heightAddition = 25;
     
+    [Header("Noise Settings")]
+    public float terrainFreq = .05f;
+    public float caveFreq = .05f;
     public float seed;
     public Texture2D noiseTexture;
 
+    private List<Vector2> worldTiles = new List<Vector2>();
+
+    /// <summary>
+    /// 初始化地形生成逻辑，在游戏对象启动时调用。
+    /// 随机生成一个种子值，并依次生成噪声纹理和地形。
+    /// </summary>
     private void Start()
     {
         seed = Random.Range(-10000, 10000);
@@ -24,40 +49,131 @@ public class TerrainGeneration : MonoBehaviour
         GenerateTerrain();
     }
 
+    /// <summary>
+    /// 根据噪声纹理和地形高度生成实际的地形块。
+    /// 每一列根据 Perlin 噪声计算高度，然后在该高度范围内检查噪声纹理，
+    /// 如果纹理中某点的红色通道值大于 surfaceValue，则在该位置生成一个地块。
+    /// </summary>
     private void GenerateTerrain()
     {
+        // 遍历每一列（x 坐标）
         for (int x = 0; x < worldSize; x++)
         {
+            // 使用 Perlin 噪声计算当前列的地形高度
             float height = Mathf.PerlinNoise((x + seed) * terrainFreq, seed * terrainFreq) * heightMultiplier + heightAddition;
+
+            // 遍历该列中从底部到计算高度的所有行（y 坐标）
             for (int y = 0; y < height; y++)
             {
-                if (noiseTexture.GetPixel(x, y).r > surfaceValue)
+                Sprite tileSprite;
+                
+                if (y < height - dirtLayerHeight)
                 {
-                    GameObject newTile = new GameObject();
-                    newTile.name = "tile";
-                    newTile.transform.parent = this.transform;
-                    newTile.AddComponent<SpriteRenderer>();
-                    newTile.GetComponent<SpriteRenderer>().sprite = tile;
-                    newTile.transform.position = new Vector2(x + .5f, y + .5f);
+                    tileSprite = stone;
+                }
+                else if (y < height - 1)
+                {
+                    tileSprite = dirt;
+                }
+                else
+                {
+                    tileSprite = grass;
+                }
+
+                if (generateCaves)
+                {
+                    // 如果噪声纹理中该点的红色通道值大于阈值，则生成地块
+                    if (noiseTexture.GetPixel(x, y).r > surfaceValue)
+                    {
+                        PlaceTile(tileSprite, x, y);
+                    }
+                }
+                else
+                {
+                    PlaceTile(tileSprite, x, y);
+                }
+
+                if (y >= height - 1)
+                {
+                    int t = Random.Range(0, treeChance);
+                    if (t == 1)
+                    {
+                        if (worldTiles.Contains(new Vector2(x, y)))
+                            GenerateTree(x, y + 1);
+                    }
                 }
             }
         }
     }
 
 
+    /// <summary>
+    /// 生成用于决定地形中哪些位置应生成地块的噪声纹理。
+    /// 使用 Perlin 噪声填充纹理的每个像素，颜色值表示该点的噪声强度。
+    /// </summary>
     private void GenerateNoiseTexture()
     {
+        // 初始化一个与世界大小相同的纹理
         noiseTexture = new Texture2D(worldSize, worldSize);
 
+        // 遍历纹理的每个像素
         for (int x = 0; x < noiseTexture.width; x++)
         {
             for (int y = 0; y < noiseTexture.height; y++)
             {
+                // 使用 Perlin 噪声生成像素值
                 float v = Mathf.PerlinNoise((x + seed) * caveFreq, (y + seed) * caveFreq);
+                // 将噪声值设置为 RGB 三个通道，形成灰度图
                 noiseTexture.SetPixel(x, y, new Color(v, v, v));
             }
         }
         
+        // 应用纹理更改
         noiseTexture.Apply();
+    }
+
+    /// <summary>
+    /// 在指定坐标生成一棵树。
+    /// 树由树干和树叶组成，树干使用 log 精灵，树叶使用 leaf 精灵。
+    /// </summary>
+    /// <param name="x">树木底部中心的 x 坐标</param>
+    /// <param name="y">树木底部中心的 y 坐标</param>
+    void GenerateTree(float x, float y)
+    {
+        int treeHeight = Random.Range(minTreeHeight, maxTreeHeight);
+        for (int i = 0; i < treeHeight; i++)
+        {
+            PlaceTile(log, x, y + i);    
+        }
+        
+        for (int i = 0; i < 3; i++) 
+        {
+            PlaceTile(leaf, x, y + treeHeight + i);
+        }
+    
+        for (int i = 0; i < 2; i++)
+        {
+            PlaceTile(leaf, x - 1, y + treeHeight + i);
+            PlaceTile(leaf, x + 1, y + treeHeight + i);
+        }
+    }
+    
+    /// <summary>
+    /// 在指定坐标创建一个新的地块对象。
+    /// 新对象将作为当前对象的子对象，并设置其精灵和位置。
+    /// </summary>
+    /// <param name="tileSprite">要使用的精灵</param>
+    /// <param name="x">地块的 x 坐标</param>
+    /// <param name="y">地块的 y 坐标</param>
+    private void PlaceTile(Sprite tileSprite, float x, float y)
+    {
+        GameObject newTile = new GameObject();
+        newTile.transform.parent = this.transform;
+        newTile.AddComponent<SpriteRenderer>();
+        newTile.GetComponent<SpriteRenderer>().sprite = tileSprite;
+        newTile.name = tileSprite.name;
+        newTile.transform.position = new Vector2(x + .5f, y + .5f);
+        
+        worldTiles.Add(newTile.transform.position - Vector3.one * .5f);
     }
 }
