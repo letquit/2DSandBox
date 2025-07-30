@@ -248,10 +248,11 @@ MonoBehaviour:
   treeChance: 15
   minTreeHeight: 4
   maxTreeHeight: 6
+  chunkSize: 20
   generateCaves: 1
   dirtLayerHeight: 5
   surfaceValue: 0.25
-  worldSize: 100
+  worldSize: 400
   heightMultiplier: 25
   heightAddition: 25
   terrainFreq: 0.04

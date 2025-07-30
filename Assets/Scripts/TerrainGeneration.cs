@@ -21,8 +21,9 @@ public class TerrainGeneration : MonoBehaviour
     public int treeChance = 10;
     public int minTreeHeight = 4;
     public int maxTreeHeight = 6;
-    
+
     [Header("Generation Settings")]
+    public int chunkSize = 16;
     public bool generateCaves = true;
     public int dirtLayerHeight = 5;
     public float surfaceValue = .25f;
@@ -36,6 +37,7 @@ public class TerrainGeneration : MonoBehaviour
     public float seed;
     public Texture2D noiseTexture;
 
+    private GameObject[] worldChunks;
     private List<Vector2> worldTiles = new List<Vector2>();
 
     /// <summary>
@@ -46,7 +48,21 @@ public class TerrainGeneration : MonoBehaviour
     {
         seed = Random.Range(-10000, 10000);
         GenerateNoiseTexture();
+        CreateChunks();
         GenerateTerrain();
+    }
+
+    private void CreateChunks()
+    {
+        int numChucks = worldSize / chunkSize;
+        worldChunks = new GameObject[numChucks];
+        for (int i = 0; i < numChucks; i++)
+        {
+            GameObject newChunk = new GameObject();
+            newChunk.name = i.ToString();
+            newChunk.transform.parent = this.transform;
+            worldChunks[i] = newChunk;
+        }
     }
 
     /// <summary>
@@ -138,7 +154,7 @@ public class TerrainGeneration : MonoBehaviour
     /// </summary>
     /// <param name="x">树木底部中心的 x 坐标</param>
     /// <param name="y">树木底部中心的 y 坐标</param>
-    void GenerateTree(float x, float y)
+    void GenerateTree(int x, int y)
     {
         int treeHeight = Random.Range(minTreeHeight, maxTreeHeight);
         for (int i = 0; i < treeHeight; i++)
@@ -165,10 +181,14 @@ public class TerrainGeneration : MonoBehaviour
     /// <param name="tileSprite">要使用的精灵</param>
     /// <param name="x">地块的 x 坐标</param>
     /// <param name="y">地块的 y 坐标</param>
-    private void PlaceTile(Sprite tileSprite, float x, float y)
+    private void PlaceTile(Sprite tileSprite, int x, int y)
     {
         GameObject newTile = new GameObject();
-        newTile.transform.parent = this.transform;
+
+        float chunkCoord = Mathf.Round(x / chunkSize) * chunkSize;
+        chunkCoord /= chunkSize;
+        newTile.transform.parent = worldChunks[(int)chunkCoord].transform;
+        
         newTile.AddComponent<SpriteRenderer>();
         newTile.GetComponent<SpriteRenderer>().sprite = tileSprite;
         newTile.name = tileSprite.name;
