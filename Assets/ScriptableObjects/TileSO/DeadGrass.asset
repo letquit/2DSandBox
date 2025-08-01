@@ -10,8 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bb9675a0bcc51a547ab6403ba8b4807b, type: 3}
-  m_Name: Snow
+  m_Name: DeadGrass
   m_EditorClassIdentifier: 
-  tileName: Snow
+  tileName: DeadGrass
   tileSprites:
-  - {fileID: 21300000, guid: 09e18e56c24f9214bb2da114a9262931, type: 3}
+  - {fileID: 21300000, guid: ab1ffb87ffa1486448c16fbc5b1e0ef5, type: 3}
+  - {fileID: 21300000, guid: e4812d21717803b45a55ceee3f051715, type: 3}

@@ -18,7 +18,7 @@ public class TerrainGeneration : MonoBehaviour
 
     [Header("Biomes")]
     public float biomeFrequency;
-    public Gradient biomeColors;
+    public Gradient biomeGradient;
     public Texture2D biomeMap;
     
     [Header("Trees")]
@@ -48,6 +48,7 @@ public class TerrainGeneration : MonoBehaviour
 
     private GameObject[] worldChunks;
     private List<Vector2> worldTiles = new List<Vector2>();
+    private BiomeClass curBiome;
 
     private void OnValidate()
     {
@@ -97,7 +98,7 @@ public class TerrainGeneration : MonoBehaviour
             for (int y = 0; y < biomeMap.height; y++)
             {
                 float v = Mathf.PerlinNoise((x + seed) * biomeFrequency, (y + seed) * biomeFrequency);
-                Color col = biomeColors.Evaluate(v);
+                Color col = biomeGradient.Evaluate(v);
                 biomeMap.SetPixel(x, y, col);
             }
         }
@@ -118,6 +119,18 @@ public class TerrainGeneration : MonoBehaviour
         }
     }
 
+    public BiomeClass GetCurrentBiome(int x, int y)
+    {
+        for (int i = 0; i < biomes.Length; i++)
+        {
+            if (biomes[i].biomeCol == biomeMap.GetPixel(x, y))
+            {
+                return biomes[i];
+            }
+        }
+        return curBiome;
+    }
+
     /// <summary>
     /// 根据噪声纹理和地形高度生成实际的地形块。
     /// 每一列根据 Perlin 噪声计算高度，然后在该高度范围内检查噪声纹理，
@@ -125,20 +138,22 @@ public class TerrainGeneration : MonoBehaviour
     /// </summary>
     private void GenerateTerrain()
     {
+        Sprite[] tileSprites;
+
         // 遍历每一列（x 坐标）
         for (int x = 0; x < worldSize; x++)
         {
+            curBiome = GetCurrentBiome(x, 0);
             // 使用 Perlin 噪声计算当前列的地形高度
-            float height = Mathf.PerlinNoise((x + seed) * terrainFreq, seed * terrainFreq) * heightMultiplier + heightAddition;
+            float height = Mathf.PerlinNoise((x + seed) * curBiome.terrainFreq, seed * curBiome.terrainFreq) * curBiome.heightMultiplier + heightAddition;
 
             // 遍历该列中从底部到计算高度的所有行（y 坐标）
             for (int y = 0; y < height; y++)
             {
-                Sprite[] tileSprites;
-                
+                curBiome = GetCurrentBiome(x, y);
                 if (y < height - dirtLayerHeight)
                 {
-                    tileSprites = tileAtlas.stone.tileSprites;
+                    tileSprites = curBiome.tileAtlas.stone.tileSprites;
                     
                     if (ores[0].spreadTexture.GetPixel(x, y).r > .5f && height - y > ores[0].maxSpawnHeight)
                         tileSprites = tileAtlas.coal.tileSprites;
@@ -154,11 +169,11 @@ public class TerrainGeneration : MonoBehaviour
                 }
                 else if (y < height - 1)
                 {
-                    tileSprites = tileAtlas.dirt.tileSprites;
+                    tileSprites = curBiome.tileAtlas.dirt.tileSprites;
                 }
                 else
                 {
-                    tileSprites = tileAtlas.grass.tileSprites;
+                    tileSprites = curBiome.tileAtlas.grass.tileSprites;
                 }
 
                 if (generateCaves)
@@ -176,19 +191,22 @@ public class TerrainGeneration : MonoBehaviour
 
                 if (y >= height - 1)
                 {
-                    int t = Random.Range(0, treeChance);
+                    int t = Random.Range(0, curBiome.treeChance);
                     if (t == 1)
                     {
                         if (worldTiles.Contains(new Vector2(x, y)))
-                            GenerateTree(x, y + 1);
+                            GenerateTree(Random.Range(curBiome.minTreeHeight, curBiome.maxTreeHeight), x, y + 1);
                     }
                     else
                     {
-                        int i = Random.Range(0, tallGrassChance);
+                        int i = Random.Range(0, curBiome.tallGrassChance);
                         if (i == 1)
                         {
                             if (worldTiles.Contains(new Vector2(x, y)))
-                                PlaceTile(tileAtlas.tallGrass.tileSprites, x, y + 1);   
+                            {
+                                if (curBiome.tileAtlas.tallGrass != null)
+                                    PlaceTile(curBiome.tileAtlas.tallGrass.tileSprites, x, y + 1);
+                            }   
                         }
                     }
                 }
@@ -228,9 +246,8 @@ public class TerrainGeneration : MonoBehaviour
     /// </summary>
     /// <param name="x">树木底部中心的 x 坐标</param>
     /// <param name="y">树木底部中心的 y 坐标</param>
-    void GenerateTree(int x, int y)
+    void GenerateTree(int treeHeight, int x, int y)
     {
-        int treeHeight = Random.Range(minTreeHeight, maxTreeHeight);
         for (int i = 0; i < treeHeight; i++)
         {
             PlaceTile(tileAtlas.log.tileSprites, x, y + i);    
