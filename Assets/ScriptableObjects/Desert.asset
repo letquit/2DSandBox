@@ -15,12 +15,12 @@ MonoBehaviour:
   grass: {fileID: 11400000, guid: 41834f95f0dba2540a3fb8f30791a246, type: 2}
   dirt: {fileID: 11400000, guid: 41834f95f0dba2540a3fb8f30791a246, type: 2}
   stone: {fileID: 11400000, guid: 41834f95f0dba2540a3fb8f30791a246, type: 2}
-  log: {fileID: 11400000, guid: 12690657b912f4a4387f1a96b718c199, type: 2}
-  leaf: {fileID: 11400000, guid: fb38019e6e4077d42bbcdc5f8b4ad010, type: 2}
+  log: {fileID: 0}
+  leaf: {fileID: 0}
   tallGrass: {fileID: 11400000, guid: b1cd4737aaa8f9446acb6479b9df84a0, type: 2}
-  snow: {fileID: 11400000, guid: c93217b00c5ea31479bcce6f35391698, type: 2}
-  sand: {fileID: 11400000, guid: 41834f95f0dba2540a3fb8f30791a246, type: 2}
-  coal: {fileID: 11400000, guid: d8d64c345bb20a24aa10469a0542e657, type: 2}
-  iron: {fileID: 11400000, guid: e302ae718d6a4534a9410b4c20475ac6, type: 2}
-  gold: {fileID: 11400000, guid: c0c86046f3293d445a257957bbd46f78, type: 2}
-  diamond: {fileID: 11400000, guid: 95f5c82158ad5fb4286e9ea28c41afe3, type: 2}
+  snow: {fileID: 0}
+  sand: {fileID: 0}
+  coal: {fileID: 0}
+  iron: {fileID: 0}
+  gold: {fileID: 0}
+  diamond: {fileID: 0}
